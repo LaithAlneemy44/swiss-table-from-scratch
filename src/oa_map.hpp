@@ -7,13 +7,6 @@
 
 using namespace std;
 
-enum state : unsigned char {
-    filled,
-    deleted,
-    empty,
-    end
-};
-
 template<typename K, typename V>
 class OA_Map {
 public:
@@ -28,13 +21,17 @@ public:
     OA_Iterator<K, V> end();
     OA_Iterator<K, V> find(const K& key);
 
+
 private:
-    vector<pair<K, V>> slots;
-    vector<state> states; 
-    size_t m_size = 0;
-    size_t capacity;
     uint64_t hash(const K& key);
     void rehash();
+    V s_empty;
+    V s_deleted;
+
+private:
+    vector<pair<K, V>> slot;
+    size_t m_size = 0;
+    size_t capacity;
 };
 
 #include "oa_map.tpp"
