@@ -9,11 +9,29 @@ template<typename K, typename V>
 OA_Map<K, V>::OA_Map(size_t capacity) {
     this->capacity = capacity; 
     slots.resize(capacity);
+    state.resize(capacity + 1);
+    states.fill(state::empty);
+    states.back() = state::end;
 }
 
 template<typename K, typename V>
 void OA_Map<K, V>::insert(const K& key, const V& value) {
-    
+    uint64_t hashed = hash(key);
+    const size_t index = hashed % capacity;
+    for (size_t i = index; ; ++i) {
+        if (states[i] == state::filled && slots[i].first == key) {
+            slots[i].second = value;
+        }
+
+        else if (states[i] == state::empty) {
+            slots[i] = {key, value};
+            return;
+        }
+
+        else if (states[i] == state::end) {
+            i = -1;
+        }
+    }
 }
 
 template<typename K, typename V>
@@ -49,6 +67,11 @@ OA_Iterator<K, V> OA_Map<K, V>::begin() const {
 
 template <typename K, typename V>
 OA_Iterator<K, V> OA_Map<K, V>::end() const {
+
+}
+
+template<typename K, typename V>
+uint64_t OA_Map<K, V>::hash(const K& key) {
 
 }
 
