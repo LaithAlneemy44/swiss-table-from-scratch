@@ -3,12 +3,47 @@
 #include <cstddef>
 #include <utility>
 #include <cstdint>
-#include "oa_iterator.hpp"
 
 using namespace std;
 
 template<typename K, typename V>
+
 class OA_Map {
+private:
+    class Iterator {
+    public:
+        Iterator(pair<K, V>* slot) {
+            ptr = slot;
+        }
+
+        Iterator& operator++();
+
+        Iterator operator++(int);
+
+        Iterator& operator--();
+
+        Iterator operator--(int);
+
+        pair<K, V>& operator*() const {
+            return *ptr;
+        }
+
+        pair<K, V>* operator->() const {
+            return ptr;
+        }
+
+        bool operator==(const Iterator& other) const {
+            return this->first == other->first && this->second == other->second;
+        }
+
+        bool operator!=(const Iterator& other) const {
+            return !(*this == other);
+        }
+
+    private:
+        pair<K, V>* ptr;
+    };
+
 public:
     OA_Map(size_t capacity, const K& sen_empty, const K& sen_deleted) : 
     capacity{capacity}, sen_empty{sen_empty}, sen_deleted{sen_deleted}, slots(capacity, {sen_empty, V{}}) {
