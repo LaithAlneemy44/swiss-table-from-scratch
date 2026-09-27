@@ -55,11 +55,6 @@ void OA_Map<K, V>::erase(const K& key) {
 }
 
 template<typename K, typename V>
-void OA_Map<K, V>::find(const K& key) const {
-
-}
-
-template<typename K, typename V>
 bool OA_Map<K, V>::empty() const {
     return size() == 0;
 }
@@ -76,13 +71,25 @@ V& OA_Map<K, V>::operator[](const K& key) {
 }
 
 template <typename K, typename V>
-OA_Iterator<K, V> OA_Map<K, V>::begin() const {
+OA_Iterator<K, V> OA_Map<K, V>::begin() {
 
 }
 
 template <typename K, typename V>
-OA_Iterator<K, V> OA_Map<K, V>::end() const {
+OA_Iterator<K, V> OA_Map<K, V>::end() {
 
+}
+
+template<typename K, typename V>
+OA_Iterator<K, V> OA_Map<K, V>::find(const K& key) {
+    auto it = begin();
+    for (; it != end(); ++it) {
+        if (it->first == key) {
+            return it;
+        }
+    }
+
+    return it;
 }
 
 template<typename K, typename V>

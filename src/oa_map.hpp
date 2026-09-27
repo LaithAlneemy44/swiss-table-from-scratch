@@ -21,12 +21,12 @@ public:
     explicit OA_Map(size_t capacity);
     void insert(const K& key, const V& value);
     void erase(const K& key);
-    void find(const K& key) const;
     bool empty() const;
     size_t size() const;
     V& operator[](const K& key);
-    OA_Iterator<K, V> begin() const;
-    OA_Iterator<K, V> end() const ;
+    OA_Iterator<K, V> begin();
+    OA_Iterator<K, V> end();
+    OA_Iterator<K, V> find(const K& key);
 
 private:
     vector<pair<K, V>> slots;
