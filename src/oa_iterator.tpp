@@ -1,11 +1,6 @@
 #include "oa_iterator.hpp"
 
 template <typename K, typename V>
-OA_Iterator<K, V>::OA_Iterator() {
-
-}
-
-template <typename K, typename V>
 OA_Iterator<K, V>::OA_Iterator(pair<K, V>* slot) {
     ptr = slot;
 }
@@ -32,7 +27,7 @@ OA_Iterator<K, V> OA_Iterator<K, V>::operator--(int) {
 
 template <typename K, typename V>
 pair<K, V>& OA_Iterator<K, V>::operator*() const {
-
+    return *ptr;
 }
 
 template <typename K, typename V>
