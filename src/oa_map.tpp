@@ -74,7 +74,24 @@ size_t OA_Map<K, V>::size() const {
 
 template<typename K, typename V>
 V& OA_Map<K, V>::operator[](const K& key) {
-    
+    auto it = find(key);
+    if (it != end()) {
+        return it->second;
+    }
+
+    uint64_t hashed = hash(key);
+    const size_t index = hashed % capacity;
+    for (size_t i = 0; ; ++i) {
+        if (slots[i].first == sen_empty || slots[i].first == sen_deleted) {
+            return slots[i].second = V{};
+        }
+
+        else if (i >= capacity - 1) {
+            i = -1;
+        }
+    }
+
+    return V{};
 }
 
 template <typename K, typename V>
