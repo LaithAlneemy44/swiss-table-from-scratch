@@ -12,24 +12,44 @@ class OA_Map {
 private:
     class Iterator {
     public:
-        Iterator(pair<K, V>* slot) {
-            ptr = slot;
+        Iterator(pair<K, V>* slot_ptr, OA_Map* map_ptr) : slot_ptr(slot_ptr), map_ptr(map_ptr){
+     
         }
 
-        Iterator& operator++();
+        Iterator& operator++() {
+            while (slot_ptr != end() && (slot_ptr->first == map_ptr->sen_empty || slot_ptr->first == map_ptr->sen_deleted)) {
+                ++slot_ptr;
+            }
 
-        Iterator operator++(int);
+            return slot_ptr;
+        }
 
-        Iterator& operator--();
+        Iterator operator++(int) {
+            Iterator temp = *this;
+            ++this;
+            return temp;
+        }
 
-        Iterator operator--(int);
+        Iterator& operator--() {
+            while (slot_ptr != end() && (slot_ptr->first == map_ptr->sen_empty || slot_ptr->first == map_ptr->sen_deleted)) {
+                --slot_ptr;
+            }
+
+            return slot_ptr;
+        }
+
+        Iterator operator--(int) {
+            Iterator temp = *this;
+            --this;
+            return temp;
+        }
 
         pair<K, V>& operator*() const {
-            return *ptr;
+            return *slot_ptr;
         }
 
         pair<K, V>* operator->() const {
-            return ptr;
+            return slot_ptr;
         }
 
         bool operator==(const Iterator& other) const {
@@ -37,11 +57,12 @@ private:
         }
 
         bool operator!=(const Iterator& other) const {
-            return !(*this == other);
+            return !(this == other);
         }
 
     private:
-        pair<K, V>* ptr;
+        pair<K, V>* slot_ptr;
+        OA_Map* map_ptr;
     };
 
 public:
@@ -120,10 +141,10 @@ public:
         return V{};
     }
 
-    OA_Iterator<K, V> begin() {
+    Iterator<K, V> begin() {
         for (size_t i = 0; i < capacity; ++i) {
             if (slots[i].first != sen_empty && slots[i].first != sen_deleted) {
-                return OA_Iterator(&slots[i]);
+                return Iterator(&slots[i]);
             }
         }
 
@@ -131,16 +152,16 @@ public:
     }
 
 
-    OA_Iterator<K, V> end() {
-        return OA_Iterator(slots.data() + capacity);
+    Iterator<K, V> end() {
+        return Iterator(slots.data() + capacity);
     }
 
-    OA_Iterator<K, V> find(const K& key) {
+    Iterator<K, V> find(const K& key) {
         uint64_t hashed = hash(key);
         const size_t index = hashed % capacity;
         for (size_t i = index; ; ++i) {
             if (slots[i].first == key) {
-                return OA_Iterator(&slots[i]);
+                return Iterator(&slots[i]);
             }
             
             else if (slots[i].first == sen_empty) {
