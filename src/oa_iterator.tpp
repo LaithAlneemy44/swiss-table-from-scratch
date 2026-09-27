@@ -42,5 +42,5 @@ bool OA_Iterator<K, V>::operator==(const OA_Iterator& other) const {
 
 template <typename K, typename V>
 bool OA_Iterator<K, V>::operator!=(const OA_Iterator& other) const {
-
+    return !(this == other);
 }
