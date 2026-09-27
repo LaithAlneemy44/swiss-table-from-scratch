@@ -79,7 +79,13 @@ V& OA_Map<K, V>::operator[](const K& key) {
 
 template <typename K, typename V>
 OA_Iterator<K, V> OA_Map<K, V>::begin() {
+    for (size_t i = 0; i < capacity; ++i) {
+        if (slots[i].first != sen_empty || slots[i].first != sen_deleted) {
+            return OA_Iterator(&slots[i]);
+        }
+    }
 
+    return end();
 }
 
 template <typename K, typename V>
