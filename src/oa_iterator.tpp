@@ -32,7 +32,7 @@ pair<K, V>& OA_Iterator<K, V>::operator*() const {
 
 template <typename K, typename V>
 pair<K, V>* OA_Iterator<K, V>::operator->() const {
-
+    return ptr;
 }
 
 template <typename K, typename V>
