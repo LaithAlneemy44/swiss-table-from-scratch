@@ -90,7 +90,7 @@ OA_Iterator<K, V> OA_Map<K, V>::begin() {
 
 template <typename K, typename V>
 OA_Iterator<K, V> OA_Map<K, V>::end() {
-
+    return OA_Iterator(&slots[capacity]);
 }
 
 template<typename K, typename V>
