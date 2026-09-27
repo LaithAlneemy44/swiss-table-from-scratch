@@ -37,7 +37,7 @@ pair<K, V>* OA_Iterator<K, V>::operator->() const {
 
 template <typename K, typename V>
 bool OA_Iterator<K, V>::operator==(const OA_Iterator& other) const {
-    
+    return this->first == other->first && this->second == other->second;
 }
 
 template <typename K, typename V>
