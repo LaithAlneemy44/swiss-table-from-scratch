@@ -8,10 +8,7 @@ OA_Map<K, V>::OA_Map() {
 template<typename K, typename V>
 OA_Map<K, V>::OA_Map(size_t capacity) {
     this->capacity = capacity; 
-    slot.resize(capacity);
-    state.resize(capacity + 1);
-    states.fill(state::empty);
-    states.back() = state::end;
+    slots.resize(capacity);
 }
 
 template<typename K, typename V>
@@ -19,16 +16,16 @@ void OA_Map<K, V>::insert(const K& key, const V& value) {
     uint64_t hashed = hash(key);
     const size_t index = hashed % capacity;
     for (size_t i = index; ; ++i) {
-        if (states[i] == state::filled && slot[i].first == key) {
-            slot[i].second = value;
+        if (slots[i].first == key) {
+            slots[i].second = value;
         }
 
-        else if (states[i] == state::empty) {
-            slot[i] = {key, value};
+        else if (slots[i] == sen_empty || slots[i] == sen_deleted) {
+            slots[i] = {key, value};
             return;
         }
 
-        else if (states[i] == state::end) {
+        else if (i >= capacity - 1) {
             i = -1;
         }
     }
@@ -39,16 +36,16 @@ void OA_Map<K, V>::erase(const K& key) {
     uint64_t hashed = hash(key);
     const size_t index = hashed % capacity;
     for (size_t i = index; ; ++i) {
-        if (states[i] == state::filled && slot[i].first == key) {
-            states[i] = state::deleted;
+        if (slots[i].first == key) {
+            slots[i].first = sen_deleted;
             return;
         }
 
-        else if (states[i] == state::empty) {
+        else if (slots[i] == sen_empty) {
             return;
         }
 
-        else if (states[i] == state::end) {
+        else if (i >= capacity - 1) {
             i = -1;
         }
     }
@@ -94,12 +91,16 @@ template<typename K, typename V>
 OA_Iterator<K, V> OA_Map<K, V>::find(const K& key) {
     uint64_t hashed = hash(key);
     const size_t index = hashed % capacity;
-    for (size_t i = index; states[i] != state::empty; ++i) {
-        if (states[i] == state::filled && slot[i].first == key) {
-            return OA_Iterator()
+    for (size_t i = index; ; ++i) {
+        if (slots[i].first == key) {
+            return OA_Iterator(&slots[i]);
+        }
+        
+        else if (slots[i].first == sen_empty) {
+            return end();
         }
 
-        else if (states[i] == state::end) {
+        else if (i >= capacity - 1) {
             i = -1;
         }
     }

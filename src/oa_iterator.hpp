@@ -7,7 +7,7 @@ template<typename K, typename V>
 class OA_Iterator {
 public:
     OA_Iterator();
-    explicit OA_Iterator();
+    explicit OA_Iterator(pair<K, V>* slot);
     OA_Iterator& operator++();
     OA_Iterator operator++(int);
     OA_Iterator& operator--();
