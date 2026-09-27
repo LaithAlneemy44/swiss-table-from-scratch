@@ -36,7 +36,22 @@ void OA_Map<K, V>::insert(const K& key, const V& value) {
 
 template<typename K, typename V>
 void OA_Map<K, V>::erase(const K& key) {
-    
+    uint64_t hashed = hash(key);
+    const size_t index = hashed % capacity;
+    for (size_t i = index; ; ++i) {
+        if (states[i] == state::filled && slots[i].first == key) {
+            states[i] = state::deleted;
+            return;
+        }
+
+        else if (states[i] == state::empty) {
+            return;
+        }
+
+        else if (states[i] == state::end) {
+            i = -1;
+        }
+    }
 }
 
 template<typename K, typename V>
