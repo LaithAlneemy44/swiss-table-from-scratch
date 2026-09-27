@@ -1,14 +1,9 @@
 #include "oa_map.hpp"
 
 template<typename K, typename V>
-OA_Map<K, V>::OA_Map() {
-    OA_Map(32);
-}
+OA_Map<K, V>::OA_Map(size_t capacity, const K& sen_empty, const K& sen_deleted) : 
+capacity{capacity}, sen_empty{sen_empty}, sen_deleted{sen_deleted}, slots(capacity, {sen_empty, V{}}) {
 
-template<typename K, typename V>
-OA_Map<K, V>::OA_Map(size_t capacity) {
-    this->capacity = capacity; 
-    slots.resize(capacity);
 }
 
 template<typename K, typename V>
@@ -41,7 +36,7 @@ void OA_Map<K, V>::erase(const K& key) {
             return;
         }
 
-        else if (slots[i] == sen_empty) {
+        else if (slots[i].first == sen_empty) {
             return;
         }
 
@@ -51,15 +46,6 @@ void OA_Map<K, V>::erase(const K& key) {
     }
 }
 
-template<typename K, typename V>
-void OA_Map<K, V>::set_empty_sentinel(const V& sentinel) {
-    sen_empty = sentinel;
-}
-
-template<typename K, typename V>
-void OA_Map<K, V>::set_deleted_sentinel(const V& sentinel) {
-    sen_deleted = sentinel;
-}
 
 template<typename K, typename V>
 bool OA_Map<K, V>::empty() const {

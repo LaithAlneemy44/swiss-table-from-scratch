@@ -10,12 +10,9 @@ using namespace std;
 template<typename K, typename V>
 class OA_Map {
 public:
-    OA_Map();
-    explicit OA_Map(size_t capacity);
+    OA_Map(size_t capacity, const K& sen_empty, const K& sen_deleted);
     void insert(const K& key, const V& value);
     void erase(const K& key);
-    void set_empty_sentinel(const V& value);
-    void set_deleted_sentinel(const V& value);
     bool empty() const;
     size_t size() const;
     V& operator[](const K& key);
@@ -26,8 +23,8 @@ public:
 private:
     uint64_t hash(const K& key);
     void rehash();
-    V sen_empty;
-    V sen_deleted;
+    K sen_empty;
+    K sen_deleted;
 
 private:
     vector<pair<K, V>> slots;
