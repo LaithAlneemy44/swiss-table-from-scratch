@@ -50,3 +50,11 @@ Record of mistakes by any AI tool, corrections and rejected suggestions. Appende
 - **How it was found:** pointing out that `erase` does not decrement `m_size`, after checking Claude's worked example against the code.
 - **What was done:** [record the choice made: one counter renamed to `m_occupied` with `rehash` recounting live entries, or two counters `m_size` and `m_deleted` with the load check using their sum.]
 - **Lesson:** a review has to trace the code line by line, not the reviewer's memory of what the code should be. A confident worked example is only as good as its assumptions, and the assumption here, that `erase` decrements the count, was never checked against the source.
+
+## 2026-09-28: Correct code, wrong justification about name lookup
+
+- **Asked:** whether the private `hash` member of `OA_Map` would clash with `std::hash`, given `using namespace std` in the header.
+- **What went wrong:** Claude correctly explained that class-scope lookup finds the private member before `std::hash`, then added that this was why `SplitMix64` had to write `std::hash<K>` explicitly. That reasoning was false. `SplitMix64` is a separate struct defined outside `OA_Map`, so the map's private member has no effect on lookup inside it. With the struct named `SplitMix64`, a plain `hash<K>` there would have found `std::hash` without qualification. The rule was right, but it was applied to a scope it does not cover.
+- **How it was found:** asking why `SplitMix64` would need `std::` when it sits outside the class.
+- **What was done:** the code was left unchanged. `std::hash` stays fully qualified, with the correct reasons recorded: it cannot collide with any other `hash` visible at global scope in a file that includes `hash.hpp`, and it keeps compiling if `using namespace std` is removed from the header.
+- **Lesson:** correct advice can arrive with an incorrect reason, and the reason is what gets reused later. A lookup rule only applies within the scope that defines it, so the scope has to be checked, not just the name.
