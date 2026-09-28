@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <utility>
 #include <cstdint>
+#include <bit>
 
 using namespace std;
 
@@ -54,8 +55,8 @@ public:
 
 public:
     OA_Map(size_t capacity, double max_load_factor, const K& sen_empty, const K& sen_deleted) : 
-    capacity{capacity}, max_load_factor{max_load_factor}, sen_empty{sen_empty}, sen_deleted{sen_deleted}, slots(capacity, {sen_empty, V{}}) {
-
+    capacity{bit_ceil(capacity)}, max_load_factor{max_load_factor}, sen_empty{sen_empty}, sen_deleted{sen_deleted}, slots(capacity, {sen_empty, V{}}) {
+        
     }
 
     void insert(const K& key, const V& value) {
