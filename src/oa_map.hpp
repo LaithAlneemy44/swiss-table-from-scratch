@@ -101,15 +101,9 @@ public:
         unreachable();
     }
 
-    bool empty() const {
-        return size() == 0;
-    }
-
-
     size_t size() const {
         return m_size;
     }
-
 
     V& operator[](const K& key) {
         auto it = find(key);
