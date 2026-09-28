@@ -42,3 +42,11 @@ Record of mistakes by any AI tool, corrections and rejected suggestions. Appende
 - **How it was found:** the first run of `swiss_hash_quality`, checked against the hypotheses committed beforehand in `17ffa96`.
 - **What was done:** the committed hypothesis was left unchanged. The divergence and its explanation are in `experiments/hash-quality-results.md`, finding 5. Two lower-confidence predictions also missed, about folded multiply and tabulation's worst avalanche cell. Those are recorded there as ordinary experimental outcomes.
 - **Lesson:** "depends on" is not the same as "is mixed by". Committing hypotheses before measuring is what made this error visible rather than quietly rewritten.
+
+## 2026-09-28: Code review reasoned about the intended design, not the code as written
+
+- **Asked:** review `OA_Map` for remaining bugs before implementing `hash` and `rehash`.
+- **What went wrong:** Claude reported that the load factor ignored tombstones and that the table could run out of empty slots, causing every probe loop to run forever. It proposed a separate `m_deleted` counter as the fix, and when questioned, gave a worked example in which `m_size` never exceeded 1 across repeated insert and erase cycles. That example was wrong for the actual code. `erase` never decremented `m_size`, so `m_size` already counted filled plus deleted slots, the load check already included tombstones, and the termination guarantee already held. The error came from reviewing against the design Claude had recommended earlier, where `erase` decrements `m_size`, rather than tracing the code that existed. The real issue was narrower: `m_size` meant "occupied slots", so `size()` over-reported after any erase.
+- **How it was found:** pointing out that `erase` does not decrement `m_size`, after checking Claude's worked example against the code.
+- **What was done:** [record the choice made: one counter renamed to `m_occupied` with `rehash` recounting live entries, or two counters `m_size` and `m_deleted` with the load check using their sum.]
+- **Lesson:** a review has to trace the code line by line, not the reviewer's memory of what the code should be. A confident worked example is only as good as its assumptions, and the assumption here, that `erase` decrements the count, was never checked against the source.

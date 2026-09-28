@@ -140,11 +140,11 @@ public:
     }
 
 private:
-    double load_factor() {
-        return ((double)m_size + 1) / capacity;
+    double load_factor() const {
+        return static_cast<double>(m_size + 1) / capacity;
     }
 
-    uint64_t hash(const K& key) {
+    uint64_t hash(const K& key) const {
         
     }
 
