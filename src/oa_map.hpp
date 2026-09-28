@@ -9,7 +9,7 @@ using namespace std;
 template<typename K, typename V>
 
 class OA_Map {
-private:
+public:
     class Iterator {
     public:
         Iterator(pair<K, V>* slot_ptr, OA_Map* map_ptr) : slot_ptr(slot_ptr), map_ptr(map_ptr){
@@ -67,8 +67,9 @@ public:
                 return;
             }
 
-            else if (slots[i] == sen_empty) {
+            else if (slots[i].first == sen_empty) {
                 slots[i] = {key, value};
+                ++m_size;
                 return;
             }
 
@@ -128,10 +129,10 @@ public:
         return V{};
     }
 
-    Iterator<K, V> begin() {
+    Iterator begin() {
         for (size_t i = 0; i < capacity; ++i) {
             if (slots[i].first != sen_empty && slots[i].first != sen_deleted) {
-                return Iterator(&slots[i]);
+                return Iterator(&slots[i], this);
             }
         }
 
@@ -139,16 +140,16 @@ public:
     }
 
 
-    Iterator<K, V> end() {
-        return Iterator(slots.data() + capacity);
+    Iterator end() {
+        return Iterator(slots.data() + capacity, this);
     }
 
-    Iterator<K, V> find(const K& key) {
+    Iterator find(const K& key) {
         uint64_t hashed = hash(key);
         const size_t index = hashed % capacity;
         for (size_t i = index; ; ++i) {
             if (slots[i].first == key) {
-                return Iterator(&slots[i]);
+                return Iterator(&slots[i], this);
             }
             
             else if (slots[i].first == sen_empty) {
