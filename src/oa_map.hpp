@@ -15,14 +15,14 @@ class OA_Map {
 public:
     class Iterator {
     public:
-        Iterator(pair<K, V>* slot_ptr, OA_Map* map_ptr) : slot_ptr(slot_ptr), map_ptr(map_ptr){
+        Iterator(pair<K, V>* slot_ptr, OA_Map* map_ptr) : m_slot_ptr(slot_ptr), m_map_ptr(map_ptr){
      
         }
 
         Iterator& operator++() {
-            ++slot_ptr;
-            while (*this != map_ptr->end() && (slot_ptr->first == map_ptr->sen_empty || slot_ptr->first == map_ptr->sen_deleted)) {
-                ++slot_ptr;
+            ++m_slot_ptr;
+            while (*this != m_map_ptr->end() && (m_slot_ptr->first == m_map_ptr->m_sen_empty || m_slot_ptr->first == m_map_ptr->m_sen_deleted)) {
+                ++m_slot_ptr;
             }
 
             return *this;
@@ -35,15 +35,15 @@ public:
         }
 
         pair<K, V>& operator*() const {
-            return *slot_ptr;
+            return *m_slot_ptr;
         }
 
         pair<K, V>* operator->() const {
-            return slot_ptr;
+            return m_slot_ptr;
         }
 
         bool operator==(const Iterator& other) const {
-            return slot_ptr == other.slot_ptr;
+            return m_slot_ptr == other.m_slot_ptr;
         }
 
         bool operator!=(const Iterator& other) const {
@@ -51,34 +51,34 @@ public:
         }
 
     private:
-        pair<K, V>* slot_ptr;
-        OA_Map* map_ptr;
+        pair<K, V>* m_slot_ptr;
+        OA_Map* m_map_ptr;
     };
 
 public:
     OA_Map(size_t capacity, double max_load_factor, const K& sen_empty, const K& sen_deleted) : 
-    capacity{bit_ceil(capacity)}, max_load_factor{max_load_factor}, sen_empty{sen_empty}, sen_deleted{sen_deleted}, slots(this->capacity, {sen_empty, V{}}) {
+    m_capacity{bit_ceil(capacity)}, m_max_load_factor{max_load_factor}, m_sen_empty{sen_empty}, m_sen_deleted{sen_deleted}, slots(this->m_capacity, {sen_empty, V{}}) {
 
     }
 
     Iterator insert(const K& key, const V& value) {
-        if (key == sen_empty || key == sen_deleted) {
+        if (key == m_sen_empty || key == m_sen_deleted) {
             throw invalid_argument("Cannot insert sentinel values.");
         }
 
-        if (load_factor() >= max_load_factor) {
+        if (load_factor() >= m_max_load_factor) {
             rehash();
         }
 
         uint64_t hashed = hash(key);
-        const size_t mask = capacity - 1;
+        const size_t mask = m_capacity - 1;
         const size_t index = hashed & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
             if (slots[i].first == key) {
                 return Iterator(&slots[i], this);
             }
 
-            else if (slots[i].first == sen_empty) {
+            else if (slots[i].first == m_sen_empty) {
                 slots[i] = {key, value};
                 ++m_size;
                 return Iterator(&slots[i], this);
@@ -89,20 +89,20 @@ public:
     }
 
     void erase(const K& key) {
-        if (key == sen_empty || key == sen_deleted) {
+        if (key == m_sen_empty || key == m_sen_deleted) {
             return;
         }
 
         uint64_t hashed = hash(key);
-        const size_t mask = capacity - 1;
+        const size_t mask = m_capacity - 1;
         const size_t index = hashed & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
             if (slots[i].first == key) {
-                slots[i].first = sen_deleted;
+                slots[i].first = m_sen_deleted;
                 return;
             }
 
-            else if (slots[i].first == sen_empty) {
+            else if (slots[i].first == m_sen_empty) {
                 return;
             }
         }
@@ -119,8 +119,8 @@ public:
     }
 
     Iterator begin() {
-        for (size_t i = 0; i < capacity; ++i) {
-            if (slots[i].first != sen_empty && slots[i].first != sen_deleted) {
+        for (size_t i = 0; i < m_capacity; ++i) {
+            if (slots[i].first != m_sen_empty && slots[i].first != m_sen_deleted) {
                 return Iterator(&slots[i], this);
             }
         }
@@ -129,23 +129,23 @@ public:
     }
 
     Iterator end() {
-        return Iterator(slots.data() + capacity, this);
+        return Iterator(slots.data() + m_capacity, this);
     }
 
     Iterator find(const K& key) {
-        if (key == sen_empty || key == sen_deleted) {
+        if (key == m_sen_empty || key == m_sen_deleted) {
             return end();
         }
 
         uint64_t hashed = hash(key);
-        const size_t mask = capacity - 1;
+        const size_t mask = m_capacity - 1;
         const size_t index = hashed & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
             if (slots[i].first == key) {
                 return Iterator(&slots[i], this);
             }
             
-            else if (slots[i].first == sen_empty) {
+            else if (slots[i].first == m_sen_empty) {
                 return end();
             }
         }
@@ -155,7 +155,7 @@ public:
 
 private:
     double load_factor() const {
-        return static_cast<double>(m_size + 1) / capacity;
+        return static_cast<double>(m_size + 1) / static_cast<double>(m_capacity);
     }
 
     uint64_t hash(const K& key) const {
@@ -164,11 +164,11 @@ private:
 
     void rehash() {
         vector<pair<K, V>> temp = move(slots);
-        capacity <<= 1;
-        slots.assign(capacity, {sen_empty, V{}});
+        m_capacity <<= 1;
+        slots.assign(m_capacity, {m_sen_empty, V{}});
         m_size = 0;
         for (const auto&[key, value] : temp) {
-            if (key != sen_empty && key != sen_deleted) {
+            if (key != m_sen_empty && key != m_sen_deleted) {
                 insert(key, value);
             }
         }
@@ -176,9 +176,9 @@ private:
 
 private:
     size_t m_size = 0;
-    size_t capacity;
-    const double max_load_factor;
-    const K sen_empty;
-    const K sen_deleted;
+    size_t m_capacity;
+    const double m_max_load_factor;
+    const K m_sen_empty;
+    const K m_sen_deleted;
     vector<pair<K, V>> slots;
 };
