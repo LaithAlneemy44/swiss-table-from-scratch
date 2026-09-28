@@ -159,7 +159,7 @@ private:
     }
 
     uint64_t hash(const K& key) const {
-        SplitMix64<K>{}(key);
+        return SplitMix64<K>{}(key);
     }
 
     void rehash() {
