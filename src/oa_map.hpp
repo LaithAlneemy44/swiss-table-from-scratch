@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <bit>
 #include <stdexcept>
+#include "hash.hpp"
 
 using namespace std;
 
@@ -158,7 +159,7 @@ private:
     }
 
     uint64_t hash(const K& key) const {
-        
+        SplitMix64(key);
     }
 
     void rehash() {
