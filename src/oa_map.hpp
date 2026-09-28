@@ -53,8 +53,8 @@ public:
     };
 
 public:
-    OA_Map(size_t capacity, const K& sen_empty, const K& sen_deleted) : 
-    capacity{capacity}, sen_empty{sen_empty}, sen_deleted{sen_deleted}, slots(capacity, {sen_empty, V{}}) {
+    OA_Map(size_t capacity, double max_load_factor, const K& sen_empty, const K& sen_deleted) : 
+    capacity{capacity}, max_load_factor{max_load_factor}, {sen_empty}, sen_deleted{sen_deleted}, slots(capacity, {sen_empty, V{}}) {
 
     }
 
@@ -175,8 +175,9 @@ private:
 
 private:
     vector<pair<K, V>> slots;
-    size_t m_size = 0;
+    expr size_t m_size = 0;
     size_t capacity;
+    double max_load_factor;
     K sen_empty;
     K sen_deleted;
 };
