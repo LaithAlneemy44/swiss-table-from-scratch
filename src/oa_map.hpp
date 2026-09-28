@@ -59,24 +59,23 @@ public:
 
     }
 
-    void insert(const K& key, const V& value) {
+    Iterator insert(const K& key, const V& value) {
+        if (load_factor() >= max_load_factor) {
+            rehash();
+        }
+
         uint64_t hashed = hash(key);
         const size_t mask = capacity - 1;
         const size_t index = hashed & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
             if (slots[i].first == key) {
-                slots[i].second = value;
-                return;
+                return Iterator(&slots[i], this);
             }
 
             else if (slots[i].first == sen_empty) {
                 slots[i] = {key, value};
                 ++m_size;
-                if (load_factor() >= max_load_factor) {
-                    rehash();
-                }
-
-                return;
+                return Iterator(&slots[i], this);
             }
         }
 
@@ -106,26 +105,7 @@ public:
     }
 
     V& operator[](const K& key) {
-        auto it = find(key);
-        if (it != end()) {
-            return it->second;
-        }
-
-        uint64_t hashed = hash(key);
-        const size_t mask = capacity - 1;
-        const size_t index = hashed & mask;
-        for (size_t i = index; ; i = (i + 1) & mask) {
-            if (slots[i].first == sen_empty) {
-                slots[i] = {key, V{}};
-                ++m_size;
-                if (load_factor() >= max_load_factor) {
-                    rehash();
-                }
-                return slots[i].second;
-            }
-        }
-
-        unreachable();
+        return insert(key, V{})->second;
     }
 
     Iterator begin() {
@@ -161,7 +141,7 @@ public:
 
 private:
     double load_factor() {
-        return (double)m_size / capacity;
+        return ((double)m_size + 1) / capacity;
     }
 
     uint64_t hash(const K& key) {
