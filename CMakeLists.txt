@@ -21,7 +21,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 option(SWISS_BUILD_TESTS      "Build unit tests"                          ON)
-option(SWISS_BUILD_BENCHMARKS "Build benchmarks"                          ON)
 option(SWISS_SANITIZE         "Build with sanitisers (tests only)"        OFF)
 option(SWISS_NATIVE           "Compile with -march=native"                OFF)
 
@@ -33,7 +32,7 @@ option(SWISS_NATIVE           "Compile with -march=native"                OFF)
 
 add_library(swiss_table INTERFACE)
 add_library(swiss::swiss_table ALIAS swiss_table)
-target_include_directories(swiss_table INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(swiss_table INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_compile_features(swiss_table INTERFACE cxx_std_23)
 
 if(SWISS_NATIVE)
@@ -63,19 +62,6 @@ if(SWISS_BUILD_TESTS)
     FetchContent_MakeAvailable(googletest)
 endif()
 
-if(SWISS_BUILD_BENCHMARKS)
-    FetchContent_Declare(benchmark
-        GIT_REPOSITORY https://github.com/google/benchmark.git
-        GIT_TAG        v1.9.1)
-    set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
-    set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
-    set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
-    # Benchmark builds itself with -Werror. Newer GCC adds warnings its source
-    # does not yet silence (GCC 16: -Wswitch in sysinfo.cc), which breaks the build.
-    set(BENCHMARK_ENABLE_WERROR OFF CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(benchmark)
-endif()
-
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -84,15 +70,9 @@ if(SWISS_BUILD_TESTS)
     enable_testing()
 
     add_executable(swiss_tests
-        tests/test_hash.cpp
-        tests/test_hash_candidates.cpp
-        tests/test_keys.cpp
-        tests/test_maps.cpp)
+        unit_tests/test_oa_map.cpp)
     target_link_libraries(swiss_tests PRIVATE
         swiss::swiss_table swiss_warnings GTest::gtest_main)
-    # The key generators and baseline adapters live with the benchmarks but are
-    # tested here.
-    target_include_directories(swiss_tests PRIVATE bench)
     # Tests keep their assert()s even in a Release build. -UNDEBUG comes after
     # the build type's -DNDEBUG on the command line, so it wins.
     target_compile_options(swiss_tests PRIVATE -UNDEBUG)
@@ -115,29 +95,4 @@ if(SWISS_BUILD_TESTS)
 
     include(GoogleTest)
     gtest_discover_tests(swiss_tests)
-endif()
-
-# ---------------------------------------------------------------------------
-# Benchmarks
-# ---------------------------------------------------------------------------
-
-if(SWISS_BUILD_BENCHMARKS)
-    add_executable(swiss_bench
-        bench/bench_hash.cpp)
-    target_link_libraries(swiss_bench PRIVATE
-        swiss::swiss_table swiss_warnings benchmark::benchmark_main)
-
-    # Every table on every workload. Registers its benchmarks at run time, so it
-    # has its own main().
-    add_executable(swiss_bench_maps
-        bench/bench_maps.cpp)
-    target_link_libraries(swiss_bench_maps PRIVATE
-        swiss::swiss_table swiss_warnings benchmark::benchmark)
-
-    # Hash-level quality analysis. Deterministic counts, not timings, so it
-    # needs no benchmark library.
-    add_executable(swiss_hash_quality
-        bench/hash_quality.cpp)
-    target_link_libraries(swiss_hash_quality PRIVATE
-        swiss::swiss_table swiss_warnings)
 endif()
