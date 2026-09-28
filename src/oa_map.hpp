@@ -123,6 +123,10 @@ public:
         for (size_t i = index; ; i = (i + 1) & mask) {
             if (slots[i].first == sen_empty) {
                 slots[i] = {key, V{}};
+                ++m_size;
+                if (load_factor() >= max_load_factor) {
+                    rehash();
+                }
                 return slots[i].second;
             }
         }
