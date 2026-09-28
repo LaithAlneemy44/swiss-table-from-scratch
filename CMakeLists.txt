@@ -9,9 +9,9 @@ project(swiss_table
 # Global settings
 # ---------------------------------------------------------------------------
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)            # -std=c++20, not -std=gnu++20
+set(CMAKE_CXX_EXTENSIONS OFF)            # -std=c++23, not -std=gnu++23
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)    # compile_commands.json for clangd / IntelliSense
 
 # Default to Release for single-config generators (Ninja, MinGW Makefiles).
@@ -34,7 +34,7 @@ option(SWISS_NATIVE           "Compile with -march=native"                OFF)
 add_library(swiss_table INTERFACE)
 add_library(swiss::swiss_table ALIAS swiss_table)
 target_include_directories(swiss_table INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_features(swiss_table INTERFACE cxx_std_20)
+target_compile_features(swiss_table INTERFACE cxx_std_23)
 
 if(SWISS_NATIVE)
     target_compile_options(swiss_table INTERFACE
