@@ -55,7 +55,7 @@ public:
 
 public:
     OA_Map(size_t capacity, double max_load_factor, const K& sen_empty, const K& sen_deleted) : 
-    capacity{bit_ceil(capacity)}, max_load_factor{max_load_factor}, sen_empty{sen_empty}, sen_deleted{sen_deleted}, slots(capacity, {sen_empty, V{}}) {
+    capacity{bit_ceil(capacity)}, max_load_factor{max_load_factor}, sen_empty{sen_empty}, sen_deleted{sen_deleted}, slots(this->capacity, {sen_empty, V{}}) {
 
     }
 
@@ -79,6 +79,8 @@ public:
                 return;
             }
         }
+
+        unreachable();
     }
 
     void erase(const K& key) {
@@ -95,6 +97,8 @@ public:
                 return;
             }
         }
+
+        unreachable();
     }
 
     bool empty() const {
@@ -136,7 +140,6 @@ public:
         return end();
     }
 
-
     Iterator end() {
         return Iterator(slots.data() + capacity, this);
     }
@@ -172,10 +175,10 @@ private:
     }
 
 private:
-    vector<pair<K, V>> slots;
     size_t m_size = 0;
     size_t capacity;
     const double max_load_factor;
     const K sen_empty;
     const K sen_deleted;
+    vector<pair<K, V>> slots;
 };
