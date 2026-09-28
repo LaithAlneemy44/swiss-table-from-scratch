@@ -162,7 +162,15 @@ private:
     }
 
     void rehash() {
-
+        vector<pair<K, V>> temp = move(slots);
+        capacity <<= 1;
+        slots.assign(capacity, {sen_empty, V{}});
+        m_size = 0;
+        for (const auto&[key, value] : temp) {
+            if (key != sen_empty && key != sen_deleted) {
+                insert(key, value);
+            }
+        }
     }
 
 private:
