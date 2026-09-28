@@ -56,7 +56,7 @@ public:
 public:
     OA_Map(size_t capacity, double max_load_factor, const K& sen_empty, const K& sen_deleted) : 
     capacity{bit_ceil(capacity)}, max_load_factor{max_load_factor}, sen_empty{sen_empty}, sen_deleted{sen_deleted}, slots(capacity, {sen_empty, V{}}) {
-        
+
     }
 
     void insert(const K& key, const V& value) {
@@ -72,6 +72,10 @@ public:
             else if (slots[i].first == sen_empty) {
                 slots[i] = {key, value};
                 ++m_size;
+                if (load_factor() >= max_load_factor) {
+                    rehash();
+                }
+
                 return;
             }
         }
@@ -114,11 +118,12 @@ public:
         const size_t index = hashed & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
             if (slots[i].first == sen_empty) {
-                return slots[i].second = V{};
+                slots[i] = {key, V{}};
+                return slots[i].second;
             }
         }
 
-        return V{};
+        unreachable();
     }
 
     Iterator begin() {
@@ -154,8 +159,12 @@ public:
     }
 
 private:
-    uint64_t hash(const K& key) {
+    double load_factor() {
+        return (double)m_size / capacity;
+    }
 
+    uint64_t hash(const K& key) {
+        
     }
 
     void rehash() {
