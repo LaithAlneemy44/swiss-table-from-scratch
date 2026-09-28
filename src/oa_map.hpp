@@ -17,30 +17,17 @@ private:
         }
 
         Iterator& operator++() {
-            while (slot_ptr != end() && (slot_ptr->first == map_ptr->sen_empty || slot_ptr->first == map_ptr->sen_deleted)) {
+            ++slot_ptr;
+            while (*this != map_ptr->end() && (slot_ptr->first == map_ptr->sen_empty || slot_ptr->first == map_ptr->sen_deleted)) {
                 ++slot_ptr;
             }
 
-            return slot_ptr;
+            return *this;
         }
 
         Iterator operator++(int) {
             Iterator temp = *this;
-            ++this;
-            return temp;
-        }
-
-        Iterator& operator--() {
-            while (slot_ptr != end() && (slot_ptr->first == map_ptr->sen_empty || slot_ptr->first == map_ptr->sen_deleted)) {
-                --slot_ptr;
-            }
-
-            return slot_ptr;
-        }
-
-        Iterator operator--(int) {
-            Iterator temp = *this;
-            --this;
+            ++*this;
             return temp;
         }
 
@@ -53,11 +40,11 @@ private:
         }
 
         bool operator==(const Iterator& other) const {
-            return this->first == other->first && this->second == other->second;
+            return slot_ptr == other.slot_ptr;
         }
 
         bool operator!=(const Iterator& other) const {
-            return !(this == other);
+            return !(*this == other);
         }
 
     private:
