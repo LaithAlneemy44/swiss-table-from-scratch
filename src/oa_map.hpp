@@ -4,6 +4,7 @@
 #include <utility>
 #include <cstdint>
 #include <bit>
+#include <stdexcept>
 
 using namespace std;
 
@@ -60,6 +61,10 @@ public:
     }
 
     Iterator insert(const K& key, const V& value) {
+        if (key == sen_empty || key == sen_deleted) {
+            throw invalid_argument("Cannot insert sentinel values.");
+        }
+
         if (load_factor() >= max_load_factor) {
             rehash();
         }
@@ -83,6 +88,10 @@ public:
     }
 
     void erase(const K& key) {
+        if (key == sen_empty || key == sen_deleted) {
+            return;
+        }
+
         uint64_t hashed = hash(key);
         const size_t mask = capacity - 1;
         const size_t index = hashed & mask;
@@ -123,6 +132,10 @@ public:
     }
 
     Iterator find(const K& key) {
+        if (key == sen_empty || key == sen_deleted) {
+            return end();
+        }
+
         uint64_t hashed = hash(key);
         const size_t mask = capacity - 1;
         const size_t index = hashed & mask;
