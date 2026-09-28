@@ -54,14 +54,15 @@ public:
 
 public:
     OA_Map(size_t capacity, double max_load_factor, const K& sen_empty, const K& sen_deleted) : 
-    capacity{capacity}, max_load_factor{max_load_factor}, {sen_empty}, sen_deleted{sen_deleted}, slots(capacity, {sen_empty, V{}}) {
+    capacity{capacity}, max_load_factor{max_load_factor}, sen_empty{sen_empty}, sen_deleted{sen_deleted}, slots(capacity, {sen_empty, V{}}) {
 
     }
 
     void insert(const K& key, const V& value) {
         uint64_t hashed = hash(key);
-        const size_t index = hashed % capacity;
-        for (size_t i = index; ; ++i) {
+        const size_t mask = capacity - 1;
+        const size_t index = hashed & mask;
+        for (size_t i = index; ; i = (i + 1) & mask) {
             if (slots[i].first == key) {
                 slots[i].second = value;
                 return;
@@ -72,17 +73,14 @@ public:
                 ++m_size;
                 return;
             }
-
-            else if (i >= capacity - 1) {
-                i = -1;
-            }
         }
     }
 
     void erase(const K& key) {
         uint64_t hashed = hash(key);
-        const size_t index = hashed % capacity;
-        for (size_t i = index; ; ++i) {
+        const size_t mask = capacity - 1;
+        const size_t index = hashed & mask;
+        for (size_t i = index; ; i = (i + 1) & mask) {
             if (slots[i].first == key) {
                 slots[i].first = sen_deleted;
                 return;
@@ -90,10 +88,6 @@ public:
 
             else if (slots[i].first == sen_empty) {
                 return;
-            }
-
-            else if (i >= capacity - 1) {
-                i = -1;
             }
         }
     }
@@ -115,14 +109,11 @@ public:
         }
 
         uint64_t hashed = hash(key);
-        const size_t index = hashed % capacity;
-        for (size_t i = 0; ; ++i) {
+        const size_t mask = capacity - 1;
+        const size_t index = hashed & mask;
+        for (size_t i = index; ; i = (i + 1) & mask) {
             if (slots[i].first == sen_empty) {
                 return slots[i].second = V{};
-            }
-
-            else if (i >= capacity - 1) {
-                i = -1;
             }
         }
 
@@ -146,18 +137,15 @@ public:
 
     Iterator find(const K& key) {
         uint64_t hashed = hash(key);
-        const size_t index = hashed % capacity;
-        for (size_t i = index; ; ++i) {
+        const size_t mask = capacity - 1;
+        const size_t index = hashed & mask;
+        for (size_t i = index; ; i = (i + 1) & mask) {
             if (slots[i].first == key) {
                 return Iterator(&slots[i], this);
             }
             
             else if (slots[i].first == sen_empty) {
                 return end();
-            }
-
-            else if (i >= capacity - 1) {
-                i = -1;
             }
         }
 
