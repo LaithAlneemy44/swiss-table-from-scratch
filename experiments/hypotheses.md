@@ -4,10 +4,10 @@ bytes. There is only a 1/128 chance of a matching control byte having different 
 significantly, as it is likely that on the first matching control byte, the keys will be the same. However, since comparing keys for primitives is very cheap, it is unlikely for there to be a significant performance improvement, and the extra memory allocated for the control vector may worsen memory usage.
 
 ## H2: The Swiss Map will perform the best at low load factors
-Since 16 slots are checked simultanously, and the likelihood of false hits are low, then if the element isn't the map, it is very likely that an empty control byte will be read in the first 16 bytes, giving a very early return. At high load factors, it may be the case that there are many deleted slots, causing there to be no empty slot in the first few iterations.
+Since 16 slots are checked simultanously, and the likelihood of false hits are low, then if the element isn't the map, it is very likely that an empty control byte will be read in the first 16 bytes, giving a very early return. At high load factors, it may be the case that there are many tombstones, causing there to be no empty slot in the first few iterations.
 
 ## H3: The Open Addressing Map will perform very badly at high load factors for misses.
-According to Knuth's analysis, the expected number of slots examined for a hit is (1 + 1/(1 − α)) and miss is ½ (1 + 1/(1 − α)²), where α is the load factor.
+According to Knuth's analysis, the expected number of slots examined for a hit is ½(1 + 1/(1 − α)) and miss is ½(1 + 1/(1 − α)²), where α is the load factor.
 Substituting different values of α
 α	    Hit	  Miss
 0.5	    1.5	  2.5
