@@ -70,7 +70,7 @@ public:
             rehash();
         }
 
-        uint64_t hashed = hash(key);
+        const uint64_t hashed = hash(key);
         const size_t mask = m_capacity - 1;
         const size_t index = hashed & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
@@ -93,7 +93,7 @@ public:
             return;
         }
 
-        uint64_t hashed = hash(key);
+        const uint64_t hashed = hash(key);
         const size_t mask = m_capacity - 1;
         const size_t index = hashed & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
@@ -137,7 +137,7 @@ public:
             return end();
         }
 
-        uint64_t hashed = hash(key);
+        const uint64_t hashed = hash(key);
         const size_t mask = m_capacity - 1;
         const size_t index = hashed & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
@@ -150,7 +150,7 @@ public:
             }
         }
 
-        return end();
+        unreachable();
     }
 
 private:
