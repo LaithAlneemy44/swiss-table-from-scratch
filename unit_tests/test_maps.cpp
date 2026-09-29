@@ -24,7 +24,8 @@ protected:
 
 using MapTypes = ::testing::Types<
     OAMapFactory<int>, OAMapFactory<long long>, OAMapFactory<string>,
-    ScalarSwissMapFactory<int>, ScalarSwissMapFactory<long long>, ScalarSwissMapFactory<string>>;
+    ScalarSwissMapFactory<int>, ScalarSwissMapFactory<long long>, ScalarSwissMapFactory<string>,
+    SwissMapFactory<int>, SwissMapFactory<long long>, SwissMapFactory<string>>;
 TYPED_TEST_SUITE(MapTest, MapTypes, MapTypeNames);
 
 TYPED_TEST(MapTest, StartsEmpty) {

@@ -58,6 +58,7 @@ ctest --test-dir build-san --output-on-failure
 | `unit_tests/test_oa_map.cpp` | V1 only: sentinel keys are rejected by insert and ignored by find and erase |
 | `unit_tests/test_oa_map_typed.cpp` | V1 only: inserting a sentinel throws for every key type |
 | `unit_tests/test_scalar_swiss_map.cpp` | V2 only: keys that are V1 sentinels or match control-byte values behave as normal keys |
+| `unit_tests/test_swiss_map.cpp` | V3 only: probe groups that wrap past the end of the table, the mirrored control bytes, iteration at the last slot, the minimum capacity of 16, repeated rehashing, and the same special keys as V2 |
 | `unit_tests/test_fuzz.cpp` | Random operation sequences checked against `std::unordered_map`, run against every map |
 | `unit_tests/test_hash.cpp` | Hash determinism, distribution and avalanche |
 | `unit_tests/map_factory.hpp` | Builds each map type for a given key type, so shared tests are written once |

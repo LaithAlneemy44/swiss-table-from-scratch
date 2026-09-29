@@ -75,7 +75,8 @@ if(SWISS_BUILD_TESTS)
         unit_tests/test_maps.cpp
         unit_tests/test_oa_map.cpp
         unit_tests/test_oa_map_typed.cpp
-        unit_tests/test_scalar_swiss_map.cpp)
+        unit_tests/test_scalar_swiss_map.cpp
+        unit_tests/test_swiss_map.cpp)
     target_link_libraries(swiss_tests PRIVATE
         swiss::swiss_table swiss_warnings GTest::gtest_main)
     # Tests keep their assert()s even in a Release build. -UNDEBUG comes after

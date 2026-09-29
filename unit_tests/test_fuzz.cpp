@@ -62,7 +62,7 @@ void run_fuzz(uint32_t seed, int steps, int key_range, size_t capacity, double l
 template<typename Factory>
 class FuzzTest : public ::testing::Test {};
 
-using FuzzMapTypes = ::testing::Types<OAMapFactory<int>, ScalarSwissMapFactory<int>>;
+using FuzzMapTypes = ::testing::Types<OAMapFactory<int>, ScalarSwissMapFactory<int>, SwissMapFactory<int>>;
 TYPED_TEST_SUITE(FuzzTest, FuzzMapTypes, MapTypeNames);
 
 TYPED_TEST(FuzzTest, SmallKeyRange) {

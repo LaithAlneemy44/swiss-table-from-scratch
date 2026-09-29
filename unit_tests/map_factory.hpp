@@ -3,6 +3,7 @@
 #include <string>
 #include "oa_map.hpp"
 #include "scalar_swiss_map.hpp"
+#include "swiss_map.hpp"
 #include "key_traits.hpp"
 
 template<typename K, typename V = int>
@@ -30,6 +31,20 @@ struct ScalarSwissMapFactory {
 
     static string name() {
         return "ScalarSwissMap" + KeyTraits<K>::name();
+    }
+};
+
+template<typename K, typename V = int>
+struct SwissMapFactory {
+    using Key = K;
+    using Map = Swiss_Map<K, V>;
+
+    static Map make(size_t capacity, double max_load_factor) {
+        return Map(capacity, max_load_factor);
+    }
+
+    static string name() {
+        return "SwissMap" + KeyTraits<K>::name();
     }
 };
 
