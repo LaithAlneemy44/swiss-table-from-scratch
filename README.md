@@ -29,7 +29,7 @@ Or run the test executable directly, which accepts GoogleTest's own options:
 ```
 ./build/swiss_tests
 ./build/swiss_tests --gtest_filter=OAMapTest.*
-./build/swiss_tests --gtest_filter=-FuzzTest.*
+./build/swiss_tests --gtest_filter=-FuzzTest/*
 ```
 
 With no build type given, the build defaults to Release. Tests keep their `assert()`s in every build type.
@@ -54,11 +54,14 @@ ctest --test-dir build-san --output-on-failure
 |---|---|
 | `src/oa_map.hpp` | V1: `OA_Map<K, V>`, linear probing open addressing, with its iterator |
 | `src/hash.hpp` | `SplitMix64<K>`, the hash used by every structure |
-| `unit_tests/test_oa_map.cpp` | Tests for each operation, rehashing, iteration and churn |
-| `unit_tests/test_oa_map_typed.cpp` | The same core tests over `int`, `long long` and `std::string` keys |
-| `unit_tests/test_fuzz.cpp` | Random operation sequences checked against `std::unordered_map` |
+| `unit_tests/test_maps.cpp` | Tests for each operation, rehashing, iteration and churn, run against every map over `int`, `long long` and `std::string` keys |
+| `unit_tests/test_oa_map.cpp` | V1 only: sentinel keys are rejected by insert and ignored by find and erase |
+| `unit_tests/test_oa_map_typed.cpp` | V1 only: inserting a sentinel throws for every key type |
+| `unit_tests/test_scalar_swiss_map.cpp` | V2 only: keys that are V1 sentinels or match control-byte values behave as normal keys |
+| `unit_tests/test_fuzz.cpp` | Random operation sequences checked against `std::unordered_map`, run against every map |
 | `unit_tests/test_hash.cpp` | Hash determinism, distribution and avalanche |
-| `unit_tests/key_traits.hpp` | Sentinel values and sample keys for each tested key type |
+| `unit_tests/map_factory.hpp` | Builds each map type for a given key type, so shared tests are written once |
+| `unit_tests/key_traits.hpp` | Sentinel values, sample keys and a test-name suffix for each tested key type |
 | `ai-failures.md` | Log of AI mistakes and how they were caught, kept as they happen |
 
 ## V1 design
