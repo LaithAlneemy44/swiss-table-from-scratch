@@ -114,6 +114,10 @@ public:
         return m_size;
     }
 
+    size_t capacity() const {
+        return m_capacity;
+    }
+
     V& operator[](const K& key) {
         return insert(key, V{})->second;
     }

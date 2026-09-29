@@ -16,7 +16,7 @@ Benchmarks against `std::unordered_map` and `boost::unordered_flat_map` come aft
 
 ## Build and test
 
-Requires CMake 3.24 or later, Ninja, and a C++23 compiler. GoogleTest is downloaded at configure time.
+Requires CMake 3.24 or later, Ninja, a C++23 compiler, and Boost 1.81 or later for the benchmark baseline (MSYS2 package `mingw-w64-x86_64-boost`). GoogleTest and Google Benchmark are downloaded at configure time.
 
 ```
 cmake -S . -B build -G Ninja
@@ -42,9 +42,24 @@ cmake --build build-san
 ctest --test-dir build-san --output-on-failure
 ```
 
+## Benchmarks
+
+`swiss_bench` runs experiments E1 to E5 against V1, V2, V3, `std::unordered_map` and `boost::unordered_flat_map`. Build it in Release, write the results as JSON, then plot them. The plot script needs matplotlib (`pip install matplotlib`). A full run takes about 25 minutes.
+
+```
+cmake -S . -B build-release -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build-release --target swiss_bench
+mkdir results
+./build-release/swiss_bench --benchmark_repetitions=5 --benchmark_report_aggregates_only=true --benchmark_enable_random_interleaving=true --benchmark_out=results/bench.json --benchmark_out_format=json
+python tools/plot.py results/bench.json results/plots
+```
+
+Benchmarks are named `Experiment/Operation/Map/KeyType/Parameter`, followed by Google Benchmark's own suffixes such as `/real_time`. Select a subset with `--benchmark_filter`, for example `--benchmark_filter=^E2/`.
+
 | CMake option | Default | Effect |
 |---|---|---|
 | `SWISS_BUILD_TESTS` | `ON` | Build `swiss_tests` |
+| `SWISS_BUILD_BENCHMARKS` | `ON` | Build `swiss_bench`. Needs Boost. |
 | `SWISS_SANITIZE` | `OFF` | AddressSanitizer and UBSan where available. On MinGW, UBSan in trap mode only, plus libstdc++ bounds checks. |
 | `SWISS_NATIVE` | `OFF` | Add `-march=native`. Off by default so results do not depend on one CPU's instruction set. |
 
@@ -63,6 +78,8 @@ ctest --test-dir build-san --output-on-failure
 | `unit_tests/test_hash.cpp` | Hash determinism, distribution and avalanche |
 | `unit_tests/map_factory.hpp` | Builds each map type for a given key type, so shared tests are written once |
 | `unit_tests/key_traits.hpp` | Sentinel values, sample keys and a test-name suffix for each tested key type |
+| `bench/bench_maps.cpp` | Benchmarks E1 to E5, key generation, and a global `operator new` that counts live heap bytes for E5 |
+| `tools/plot.py` | Turns the benchmark JSON into one PNG per plot and a `summary.csv` of the plotted values |
 | `ai-failures.md` | Log of AI mistakes and how they were caught, kept as they happen |
 
 ## V1 design

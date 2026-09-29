@@ -21,6 +21,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 option(SWISS_BUILD_TESTS      "Build unit tests"                          ON)
+option(SWISS_BUILD_BENCHMARKS "Build benchmarks"                          ON)
 option(SWISS_SANITIZE         "Build with sanitisers (tests only)"        OFF)
 option(SWISS_NATIVE           "Compile with -march=native"                OFF)
 
@@ -62,6 +63,32 @@ if(SWISS_BUILD_TESTS)
     FetchContent_MakeAvailable(googletest)
 endif()
 
+if(SWISS_BUILD_BENCHMARKS)
+    FetchContent_Declare(benchmark
+        GIT_REPOSITORY https://github.com/google/benchmark.git
+        GIT_TAG        v1.9.1)
+    set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+    set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
+    set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "" FORCE)
+    # Benchmark builds itself with -Werror by default. GCC 16 raises a -Wswitch
+    # warning in its sysinfo.cc, which -Werror turns into a build failure.
+    set(BENCHMARK_ENABLE_WERROR OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(benchmark)
+
+    # Benchmark's CMake does not mark its headers SYSTEM, so the project's
+    # warning flags would apply to them. Copying its include directories into
+    # the SYSTEM property makes every consumer get them through -isystem.
+    # FetchContent_Declare(... SYSTEM) does the same but needs CMake 3.25.
+    get_target_property(benchmark_includes benchmark INTERFACE_INCLUDE_DIRECTORIES)
+    set_target_properties(benchmark PROPERTIES
+        INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${benchmark_includes}")
+
+    # Boost.Unordered is header-only, so no components are needed.
+    # Boost::headers is an imported target, and CMake already treats the
+    # include directories of imported targets as SYSTEM.
+    find_package(Boost 1.81 REQUIRED CONFIG)
+endif()
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -101,4 +128,15 @@ if(SWISS_BUILD_TESTS)
 
     include(GoogleTest)
     gtest_discover_tests(swiss_tests)
+endif()
+
+# ---------------------------------------------------------------------------
+# Benchmarks
+# ---------------------------------------------------------------------------
+
+if(SWISS_BUILD_BENCHMARKS)
+    add_executable(swiss_bench
+        bench/bench_maps.cpp)
+    target_link_libraries(swiss_bench PRIVATE
+        swiss::swiss_table swiss_warnings Boost::headers benchmark::benchmark_main)
 endif()
