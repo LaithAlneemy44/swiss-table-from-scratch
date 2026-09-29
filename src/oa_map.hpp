@@ -15,7 +15,7 @@ class OA_Map {
 public:
     class Iterator {
     public:
-        Iterator(pair<K, V>* slot_ptr, OA_Map* map_ptr) : m_slot_ptr(slot_ptr), m_map_ptr(map_ptr){
+        Iterator(pair<K, V>* slot_ptr, OA_Map* map_ptr) : m_slot_ptr(slot_ptr), m_map_ptr(map_ptr) {
      
         }
 

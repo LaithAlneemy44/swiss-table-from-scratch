@@ -15,14 +15,16 @@ class Scalar_Swiss_Map {
 public:
     class Iterator {
     public:
-        Iterator(pair<K, V>* slot_ptr, OA_Map* map_ptr) : m_slot_ptr(slot_ptr), m_map_ptr(map_ptr){
-     
+        Iterator(pair<K, V>* slot_ptr, uint8_t* control_ptr, Scalar_Swiss_Map* map_ptr) : m_slot_ptr(slot_ptr), m_control_ptr(control_ptr), m_map_ptr(map_ptr) {
+            
         }
 
         Iterator& operator++() {
             ++m_slot_ptr;
-            while (*this != m_map_ptr->end() && (m_slot_ptr->first == m_map_ptr->sen_empty || m_slot_ptr->first == m_map_ptr->sen_deleted)) {
+            ++m_control_ptr;
+            while (*this != m_map_ptr->end() && (*m_control_ptr == m_map_ptr->sen_empty || *m_control_ptr == m_map_ptr->sen_deleted)) {
                 ++m_slot_ptr;
+                ++m_control_ptr;
             }
 
             return *this;
@@ -43,7 +45,7 @@ public:
         }
 
         bool operator==(const Iterator& other) const {
-            return m_slot_ptr == other.m_slot_ptr;
+            return m_control_ptr == other.m_control_ptr;
         }
 
         bool operator!=(const Iterator& other) const {
@@ -52,7 +54,8 @@ public:
 
     private:
         pair<K, V>* m_slot_ptr;
-        OA_Map* m_map_ptr;
+        uint8_t* m_control_ptr;
+        Scalar_Swiss_Map* m_map_ptr;
     };
 
 public:
@@ -84,11 +87,11 @@ public:
                 slots[i] = {key, value};
                 control[i] = h2;
                 ++m_size;
-                return Iterator(&slots[i], this);
+                return Iterator(&slots[i], &control[i], this);
             }
 
             else if (slots[i].first == key) {
-                return Iterator(&slots[i], this);
+                return Iterator(&slots[i], &control[i], this);
             }
         }
 
@@ -126,7 +129,7 @@ public:
     Iterator begin() {
         for (size_t i = 0; i < m_capacity; ++i) {
             if (control[i] != sen_empty && control[i] != sen_deleted) {
-                return Iterator(&slots[i], this);
+                return Iterator(&slots[i], &control[i], this);
             }
         }
 
@@ -134,7 +137,7 @@ public:
     }
 
     Iterator end() {
-        return Iterator(slots.data() + m_capacity, this);
+        return Iterator(slots.data() + m_capacity, control.data() + m_capacity, this);
     }
 
     Iterator find(const K& key) {
@@ -145,7 +148,7 @@ public:
         const size_t index = h1 & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
             if (control[i] == h2 && slots[i].first == key) {
-                return Iterator(&slots[i], this);
+                return Iterator(&slots[i], &control[i], this);
             }
             
             else if (control[i] == sen_empty) {
