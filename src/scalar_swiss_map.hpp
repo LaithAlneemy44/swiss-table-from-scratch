@@ -21,7 +21,7 @@ public:
 
         Iterator& operator++() {
             ++m_slot_ptr;
-            while (*this != m_map_ptr->end() && (m_slot_ptr->first == m_map_ptr->m_sen_empty || m_slot_ptr->first == m_map_ptr->m_sen_deleted)) {
+            while (*this != m_map_ptr->end() && (m_slot_ptr->first == m_map_ptr->sen_empty || m_slot_ptr->first == m_map_ptr->sen_deleted)) {
                 ++m_slot_ptr;
             }
 
@@ -56,31 +56,38 @@ public:
     };
 
 public:
-    OA_Map(size_t capacity, double max_load_factor) : 
-    m_capacity{bit_ceil(capacity)}, m_max_load_factor{max_load_factor}, slots(this->m_capacity, {m_sen_empty, V{}}) {
+    Scalar_Swiss_Map(size_t capacity, double max_load_factor) : 
+    m_capacity{bit_ceil(capacity)}, m_max_load_factor{max_load_factor}, slots(this->m_capacity), control(this->m_capacity, sen_empty) {
 
     }
 
     Iterator insert(const K& key, const V& value) {
-        if (key == m_sen_empty || key == m_sen_deleted) {
-            throw invalid_argument("Cannot insert sentinel values.");
-        }
-
         if (load_factor() >= m_max_load_factor) {
             rehash();
         }
 
-        uint64_t hashed = hash(key);
+        const uint64_t hashed = hash(key);
+        const uint64_t h1 = hashed & ((static_cast<uint64_t>(1) << 57) - 1);
+        const uint8_t h2 = static_cast<uint8_t>(hashed >> 57);
         const size_t mask = m_capacity - 1;
-        const size_t index = hashed & mask;
+        const size_t index = h1 & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
-            if (slots[i].first == key) {
+            if (control[i] == sen_deleted) {
+                continue;
+            }
+
+            if (control[i] != sen_empty && control[i] != h2) {
+                continue;
+            }
+
+            if (control[i] == sen_empty) {
+                slots[i] = {key, value};
+                control[i] = h2;
+                ++m_size;
                 return Iterator(&slots[i], this);
             }
 
-            else if (slots[i].first == m_sen_empty) {
-                slots[i] = {key, value};
-                ++m_size;
+            else if (slots[i].first == key) {
                 return Iterator(&slots[i], this);
             }
         }
@@ -89,20 +96,18 @@ public:
     }
 
     void erase(const K& key) {
-        if (key == m_sen_empty || key == m_sen_deleted) {
-            return;
-        }
-
-        uint64_t hashed = hash(key);
+        const uint64_t hashed = hash(key);
+        const uint64_t h1 = hashed & ((static_cast<uint64_t>(1) << 57) - 1);
+        const uint8_t h2 = static_cast<uint8_t>(hashed >> 57);
         const size_t mask = m_capacity - 1;
-        const size_t index = hashed & mask;
+        const size_t index = h1 & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
-            if (slots[i].first == key) {
-                slots[i].first = m_sen_deleted;
+            if (control[i] == sen_empty) {
                 return;
             }
 
-            else if (slots[i].first == m_sen_empty) {
+            if (control[i] == h2 && slots[i].first == key) {
+                control[i] = sen_deleted;
                 return;
             }
         }
@@ -120,7 +125,7 @@ public:
 
     Iterator begin() {
         for (size_t i = 0; i < m_capacity; ++i) {
-            if (slots[i].first != m_sen_empty && slots[i].first != m_sen_deleted) {
+            if (control[i] != sen_empty && control[i] != sen_deleted) {
                 return Iterator(&slots[i], this);
             }
         }
@@ -133,24 +138,22 @@ public:
     }
 
     Iterator find(const K& key) {
-        if (key == m_sen_empty || key == m_sen_deleted) {
-            return end();
-        }
-
-        uint64_t hashed = hash(key);
+        const uint64_t hashed = hash(key);
+        const uint64_t h1 = hashed & ((static_cast<uint64_t>(1) << 57) - 1);
+        const uint8_t h2 = static_cast<uint8_t>(hashed >> 57);
         const size_t mask = m_capacity - 1;
-        const size_t index = hashed & mask;
+        const size_t index = h1 & mask;
         for (size_t i = index; ; i = (i + 1) & mask) {
-            if (slots[i].first == key) {
+            if (control[i] == h2 && slots[i].first == key) {
                 return Iterator(&slots[i], this);
             }
             
-            else if (slots[i].first == m_sen_empty) {
+            else if (control[i] == sen_empty) {
                 return end();
             }
         }
 
-        return end();
+        unreachable();
     }
 
 private:
@@ -163,13 +166,15 @@ private:
     }
 
     void rehash() {
-        vector<pair<K, V>> temp = move(slots);
+        vector<pair<K, V>> temp_slots = move(slots);
+        vector<uint8_t> temp_control = move(control);
         m_capacity <<= 1;
-        slots.assign(m_capacity, {m_sen_empty, V{}});
+        slots.resize(m_capacity);
+        control.assign(m_capacity, sen_empty);
         m_size = 0;
-        for (const auto&[key, value] : temp) {
-            if (key != m_sen_empty && key != m_sen_deleted) {
-                insert(key, value);
+        for (size_t i = 0; i < temp_control.size(); ++i) {
+            if (temp_control[i] != sen_empty && temp_control[i] != sen_deleted) {
+                insert(temp_slots[i].first, temp_slots[i].second);
             }
         }
     }

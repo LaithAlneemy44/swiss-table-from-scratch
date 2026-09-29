@@ -58,3 +58,11 @@ Record of mistakes by any AI tool, corrections and rejected suggestions. Appende
 - **How it was found:** asking why `SplitMix64` would need `std::` when it sits outside the class.
 - **What was done:** the code was left unchanged. `std::hash` stays fully qualified, with the correct reasons recorded: it cannot collide with any other `hash` visible at global scope in a file that includes `hash.hpp`, and it keeps compiling if `using namespace std` is removed from the header.
 - **Lesson:** correct advice can arrive with an incorrect reason, and the reason is what gets reused later. A lookup rule only applies within the scope that defines it, so the scope has to be checked, not just the name.
+
+## 2026-09-29: Unnecessary change justified by a guarantee that did not matter
+
+- **Asked:** review `rehash` in `Scalar_Swiss_Map`.
+- **What went wrong:** Claude recommended replacing `slots.resize(m_capacity)` with `slots.assign(m_capacity, pair<K, V>{})`, because a moved-from `std::vector` is only guaranteed to be "valid but unspecified", so `slots` might not be empty after `move`. The standard fact was correct, but it did not support the change. `resize(n)` always leaves the vector with exactly `n` elements, whatever it held before. Any leftover contents would sit in slots whose control bytes say empty, and those slots are never read. The advice added a change for a problem the design already made harmless.
+- **How it was found:** asking whether `slots` needed specific contents at all, given that the control bytes decide which slots are read.
+- **What was done:** kept `resize`. The underlying cost the question pointed at, every empty slot holding a constructed `pair<K, V>`, is recorded as a known limitation rather than fixed, since avoiding it needs raw storage and placement `new`.
+- **Lesson:** a true rule can still be the wrong rule to apply. The relevant invariant was that slot contents only matter where the control byte says full, and checking the advice against that invariant would have ruled it out.
